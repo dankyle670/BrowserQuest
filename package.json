@@ -1,0 +1,12 @@
+{
+  "name": "BrowserQuest",
+  "version": "0.0.1",
+  "private": false,
+  "dependencies": {
+    "underscore": "^1.13.6",
+    "log": "^1.4.0",
+    "websocket": "^1.0.34",
+    "sanitizer": "^0.1.3",
+    "memcached": "^2.2.2"
+  }
+}
