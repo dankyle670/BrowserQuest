@@ -1,0 +1,24 @@
+# Dockerfile.client
+
+FROM node:16-alpine
+
+# Serveur statique
+RUN npm install -g serve
+
+WORKDIR /app
+
+# Copie des fichiers nécessaires au build
+COPY client/ client/
+COPY bin/ bin/
+COPY tools/ tools/
+COPY shared/ shared/
+COPY client/config/config_build.json-dist client/config/config_build.json
+
+# Lancer le build
+RUN chmod +x /app/bin/build.sh && /app/bin/build.sh
+
+# Dossier final de déploiement
+WORKDIR /app/client-build
+
+# Lancer le serveur frontend
+CMD ["serve", "-s", ".", "-l", "8080"]

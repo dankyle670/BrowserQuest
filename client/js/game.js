@@ -710,61 +710,59 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
             }
         },
 
-        connect: function(started_callback) {
-            var self = this,
-                connecting = false; // always in dispatcher mode in the build version
-    
-            this.client = new GameClient(this.host, this.port);
+            connect: function(started_callback) {
+                var self = this;
+                var connecting = false;
             
-            //>>excludeStart("prodHost", pragmas.prodHost);
-            var config = this.app.config.local || this.app.config.dev;
-            if(config) {
-                this.client.connect(config.dispatcher); // false if the client connects directly to a game server
-                connecting = true;
-            }
-            //>>excludeEnd("prodHost");
+                var host = window.location.hostname === "localhost" ? "localhost" : "app";
+                this.client = new GameClient(host, 8000);
             
-            //>>includeStart("prodHost", pragmas.prodHost);
-            if(!connecting) {
-                this.client.connect(true); // always use the dispatcher in production
-            }
-            //>>includeEnd("prodHost");
+                //>>excludeStart("prodHost", pragmas.prodHost);
+                var config = this.app.config.local || this.app.config.dev;
+                if (config) {
+                    this.client.connect(config.dispatcher); // usually false to connect directly to the game server
+                    connecting = true;
+                }
+                //>>excludeEnd("prodHost");
             
-            this.client.onDispatched(function(host, port) {
-                log.debug("Dispatched to game server "+host+ ":"+port);
+                //>>includeStart("prodHost", pragmas.prodHost);
+                if (!connecting) {
+                    this.client.connect(false); // force direct connection in production
+                }
+                //>>includeEnd("prodHost");
+            
+                this.client.onDispatched(function(host, port) {
+                    log.debug("Dispatched to game server " + host + ":" + port);
                 
-                self.client.host = host;
-                self.client.port = port;
-                self.client.connect(); // connect to actual game server
-            });
-            
-            this.client.onConnected(function() {
-                log.info("Starting client/server handshake");
-                
-                self.player.name = self.username;
-                self.started = true;
-            
-                self.sendHello(self.player);
-            });
-        
-            this.client.onEntityList(function(list) {
-                var entityIds = _.pluck(self.entities, 'id'),
-                    knownIds = _.intersection(entityIds, list),
-                    newIds = _.difference(list, knownIds);
-            
-                self.obsoleteEntities = _.reject(self.entities, function(entity) {
-                    return _.include(knownIds, entity.id) || entity.id === self.player.id;
+                    self.client.host = host;
+                    self.client.port = port;
+                    self.client.connect(); // connect to actual game server
                 });
             
-                // Destroy entities outside of the player's zone group
-                self.removeObsoleteEntities();
+                this.client.onConnected(function() {
+                    log.info("Starting client/server handshake");
                 
-                // Ask the server for spawn information about unknown entities
-                if(_.size(newIds) > 0) {
-                    self.client.sendWho(newIds);
-                }
-            });
-        
+                    self.player.name = self.username;
+                    self.started = true;
+                
+                    self.sendHello(self.player);
+                });
+            
+                this.client.onEntityList(function(list) {
+                    var entityIds = _.pluck(self.entities, 'id'),
+                        knownIds = _.intersection(entityIds, list),
+                        newIds = _.difference(list, knownIds);
+                
+                    self.obsoleteEntities = _.reject(self.entities, function(entity) {
+                        return _.include(knownIds, entity.id) || entity.id === self.player.id;
+                    });
+                
+                    self.removeObsoleteEntities();
+                
+                    if (_.size(newIds) > 0) {
+                        self.client.sendWho(newIds);
+                    }
+                });
             this.client.onWelcome(function(id, name, x, y, hp) {
                 log.info("Received player ID from server : "+ id);
                 self.player.id = id;
@@ -846,12 +844,12 @@ function(InfoManager, BubbleManager, Renderer, Map, Animation, Sprite, AnimatedT
                     }
                     self.unregisterEntityPosition(self.player);
                 });
-            
+
                 self.player.onStep(function() {
                     if(self.player.hasNextStep()) {
                         self.registerEntityDualPosition(self.player);
                     }
-                
+    
                     if(self.isZoningTile(self.player.gridX, self.player.gridY)) {
                         self.enqueueZoningFrom(self.player.gridX, self.player.gridY);
                     }
