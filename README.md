@@ -53,7 +53,7 @@ Redis tourne sur le port : `6379` (en interne)
 
 ### 🔧 Frontend
 
-Dans `client/js/gameclient.js` (ou similaire) :
+Dans `client/js/game.js` (ou similaire) :
 Nous avons forcé la connexion directe au backend :
 
 ```js
