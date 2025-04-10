@@ -8,5 +8,6 @@
     "redis_host": "redis",
     "redis_port": 6379,
     "session_secret": "browserquest-secret",
-    "status_endpoint": true
+    "status_endpoint": true,
+    "healthcheck_enabled": true
 }

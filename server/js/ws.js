@@ -73,15 +73,20 @@ WS.MultiVersionWebsocketServer = Server.extend({
 
         this._httpServer = http.createServer((request, response) => {
             const path = url.parse(request.url).pathname;
+            
             if (path === '/status' && self.status_callback) {
                 response.writeHead(200);
                 response.write(self.status_callback());
+            } else if (path === '/health') {
+                response.writeHead(200, { 'Content-Type': 'text/plain' });
+                response.end('OK');
+                return;
             } else {
                 response.writeHead(404);
+                response.end();
             }
-            response.end();
-        });
-
+        });        
+        
         this._httpServer.listen(port, () => {
             console.log("Server is listening on port " + port);
         });

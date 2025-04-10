@@ -1,15 +1,15 @@
+# 🎮 BrowserQuest – Version Dockerisée (Frontend + Backend + Load Balancing)
 
-# 🎮 BrowserQuest – Version Dockerisée (Frontend + Backend)
-
-Ce projet est une version dockerisée complète de [BrowserQuest](https://github.com/mozilla/BrowserQuest), un jeu multijoueur inspiré de Zelda-like, avec serveur Node.js, client HTML5/JS, et Redis comme moteur de données.
+Ce projet est une version dockerisée complète de [BrowserQuest](https://github.com/mozilla/BrowserQuest), un jeu multijoueur inspiré des Zelda-like, avec serveur Node.js, client HTML5/JS, Redis pour les données, **et un Load Balancer NGINX** pour la haute disponibilité.
 
 ---
 
 ## Contenu
 
-- Serveur Node.js (`/server`)
+- Serveur Node.js (`/server`) – plusieurs instances via Docker
 - Client HTML5/JS (`/client`)
 - Redis pour stocker l’état du jeu
+- NGINX comme Load Balancer avec support WebSocket et failover automatique
 - Configuration Docker pour tout lancer facilement
 
 ---
@@ -28,14 +28,17 @@ Dans le dossier racine du projet (où se trouve `docker-compose.yml`) :
 ```bash
 docker-compose down --volumes --remove-orphans
 docker-compose build --no-cache
-docker-compose up
+docker-compose up -d
 ```
 
 Accès au client (jeu) :
-[http://localhost:8080](http://localhost:8080)
+👉 [http://localhost:81/client](http://localhost:81/client)
 
-Le backend (serveur de jeu) tourne sur le port : `8000`
-Redis tourne sur le port : `6379` (en interne)
+Connexion WebSocket :
+👉 `ws://localhost:81`
+
+Le backend tourne sur 2 instances internes (`app1` et `app2`) sur le port `8000`, load balancées par NGINX.
+Redis tourne sur le port `6379`.
 
 ---
 
@@ -43,30 +46,42 @@ Redis tourne sur le port : `6379` (en interne)
 
 ### 🔧 Docker
 
-- `Dockerfile.client` pour le client (React-like frontend)
-- `Dockerfile` pour le backend (Node.js + server.js)
-- `docker-compose.yml` : pour lier `client`, `server` et `redis`
+- `Dockerfile.client` pour le client
+- `Dockerfile` pour le backend
+- `docker-compose.yml` : déploiement multi-instance + redis + nginx
+- `nginx.conf` : configuration du proxy WebSocket avec failover et load balancing
 
 ### 🔧 Backend
 
-- Aucun changement majeur dans `/server`, sauf installation de ses dépendances via Docker (`npm install`).
+- Ajout d'un endpoint `/health` pour les healthchecks Docker/NGINX
 
 ### 🔧 Frontend
 
-Dans `client/js/game.js` (ou similaire) :
-Nous avons forcé la connexion directe au backend :
+Dans `client/config/config_build.json` :
 
-```js
-var host = window.location.hostname === "localhost" ? "localhost" : "app";
-this.client = new GameClient(host, 8000);
-this.client.connect(false);
+```json
+{
+  "host": "localhost",
+  "port": 81,
+  "secure": false
+}
 ```
 
+Dans le code client WebSocket (game.js ou équivalent) :
+
+```js
+const protocol = config.secure ? 'wss' : 'ws';
+const socket = new WebSocket(`${protocol}://${window.location.hostname}:${config.port}`);
+```
+
+Cela permet de pointer dynamiquement vers `localhost:81` en dev et `nginx:81` en Docker.
+
+---
+
 ## Modifications des dépendances (package.json)
-Lors de la Dockerisation et de la mise à jour du projet BrowserQuest, certaines dépendances ont été modifiées pour assurer une meilleure compatibilité et stabilité :
 
-## Anciennes dépendances :
-
+### Anciennes dépendances :
+```json
 "dependencies": {
   "underscore": ">0",
   "log": ">0",
@@ -76,9 +91,10 @@ Lors de la Dockerisation et de la mise à jour du projet BrowserQuest, certaines
   "sanitizer": ">0",
   "memcache": ">0"
 }
+```
 
-## Nouvelles dépendances :
-
+### Nouvelles dépendances :
+```json
 "dependencies": {
   "underscore": "^1.13.6",
   "log": "^1.4.0",
@@ -86,14 +102,11 @@ Lors de la Dockerisation et de la mise à jour du projet BrowserQuest, certaines
   "sanitizer": "^0.1.3",
   "memcached": "^2.2.2"
 }
+```
 
-- Passage à des versions spécifiques et stables
-- Suppression de:
-    bison (non utilisé dans le code actuel ou obsolète)
-    websocket-server (fusionné ou obsolète avec websocket)
-    memcache (non maintenu)
-- Ajout de:
-    memcached (lib stable et compatible avec Docker et Redis)
+- Passage à des versions stables
+- Suppression de `bison`, `websocket-server`, `memcache` (obsolètes ou non utilisés)
+- Ajout de `memcached`
 
 ---
 
@@ -102,10 +115,11 @@ Lors de la Dockerisation et de la mise à jour du projet BrowserQuest, certaines
 ```
 BrowserQuest/
 ├── client/            # Frontend
-├── server/            # Backend
+├── server/            # Backend (2 instances)
 ├── shared/            # Code partagé
-├── bin/               # Script build.sh + r.js
-├── tools/             # config RequireJS
+├── bin/               # Scripts de build
+├── tools/             # Config RequireJS
+├── nginx.conf         # Config du Load Balancer
 ├── docker-compose.yml
 ├── Dockerfile.client
 ├── Dockerfile
@@ -113,19 +127,33 @@ BrowserQuest/
 
 ---
 
-## Dépannage
+## 🔧 Dépannage
 
 - Si le message `Connecting to the server...` reste affiché :
-  - Vérifie que le client se connecte bien à `ws://app:8000` dans le code.
-  - Assure-toi que le port 8000 du backend est exposé.
-  - Lancer un `docker-compose build --no-cache` + `up` pour forcer la reconstruction.
+  - Vérifie que le client appelle bien `ws://localhost:81`
+  - Vérifie que `nginx.conf` contient les bons headers WebSocket
+  - Redémarre avec `docker-compose build --no-cache && docker-compose up -d`
+  - Teste `/health` sur les instances :
+    ```bash
+    curl http://localhost:8001/health
+    curl http://localhost:8002/health
+    ```
+
+---
+
+## 🏗️ Évolutions possibles
+
+- Ajouter HTTPS + `wss://`
+- Load balancing par IP (`ip_hash`) ou charge (`least_conn`)
+- Monitoring via Grafana/Prometheus
+- Mise à l’échelle automatique via Docker Swarm ou Kubernetes
 
 ---
 
 ## Crédits
 
 Projet original : [Mozilla BrowserQuest](https://github.com/mozilla/BrowserQuest)
-Dockerisation & Adaptation : Ton nom / équipe
+Dockerisation & Haute dispo : Ton nom / équipe
 
 ---
 
