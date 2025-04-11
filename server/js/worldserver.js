@@ -1,4 +1,17 @@
 
+const fs = require('fs');
+const path = require('path');
+const http = require('http');
+
+// Création du dossier logs s'il n'existe pas
+const logDir = path.join(__dirname, '..', '..', 'logs');
+if (!fs.existsSync(logDir)) {
+  fs.mkdirSync(logDir);
+}
+
+// Création d’un flux vers access.log
+const logStream = fs.createWriteStream(path.join(logDir, 'access.log'), { flags: 'a' });
+
 var cls = require("./lib/class"),
     _ = require("underscore"),
     Log = require('log'),
