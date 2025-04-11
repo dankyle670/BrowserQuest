@@ -25,25 +25,25 @@ Ce projet est une version dockerisée complète de [BrowserQuest](https://github
 
 Dans le dossier racine du projet (où se trouve `docker-compose.yml`) :
 
-#### Changez le dockerfile.client du client si sur windows powershell
+## Changez le dockerfile.client du client si sur windows powershell
 
 ### debut du fichier
 
 FROM node:16-alpine
 
-# Serveur statique
+#### Serveur statique
 RUN npm install -g serve
 
 WORKDIR /app
 
-# Copie des fichiers nécessaires au build
+#### Copie des fichiers nécessaires au build
 COPY client/ client/
 COPY bin/ bin/
 COPY tools/ tools/
 COPY shared/ shared/
 COPY client/config/config_build.json-dist client/config/config_build.json
 
-# Exécuter directement les commandes de build dans le Dockerfile
+#### Exécuter directement les commandes de build dans le Dockerfile
 RUN BUILDDIR="/app/client-build" && \
     PROJECTDIR="/app/client/js" && \
     RJS="/app/bin/r.js" && \
