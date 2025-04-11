@@ -14,6 +14,7 @@ COPY tools/ tools/
 COPY shared/ shared/
 COPY client/config/config_build.json-dist client/config/config_build.json
 
+RUN ls -la /app/bin/
 # Lancer le build
 RUN chmod +x /app/bin/build.sh && /app/bin/build.sh
 

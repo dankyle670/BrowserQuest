@@ -25,14 +25,66 @@ Ce projet est une version dockerisée complète de [BrowserQuest](https://github
 
 Dans le dossier racine du projet (où se trouve `docker-compose.yml`) :
 
+#### Changez le dockerfile.client du client si sur windows powershell
+
+### debut du fichier
+
+FROM node:16-alpine
+
+# Serveur statique
+RUN npm install -g serve
+
+WORKDIR /app
+
+# Copie des fichiers nécessaires au build
+COPY client/ client/
+COPY bin/ bin/
+COPY tools/ tools/
+COPY shared/ shared/
+COPY client/config/config_build.json-dist client/config/config_build.json
+
+# Exécuter directement les commandes de build dans le Dockerfile
+RUN BUILDDIR="/app/client-build" && \
+    PROJECTDIR="/app/client/js" && \
+    RJS="/app/bin/r.js" && \
+    echo "Deleting previous build directory" && \
+    rm -rf $BUILDDIR && \
+    echo "Building client with RequireJS" && \
+    cd $PROJECTDIR && \
+    node $RJS -o build.js && \
+    echo "Removing unnecessary js files from the build directory" && \
+    find $BUILDDIR/js -type f -not \( -name "game.js" -o -name "home.js" -o -name "log.js" -o -name "require-jquery.js" -o -name "modernizr.js" -o -name "css3-mediaqueries.js" -o -name "mapworker.js" -o -name "detect.js" -o -name "underscore.min.js" -o -name "text.js" \) -delete && \
+    echo "Removing sprites directory" && \
+    rm -rf $BUILDDIR/sprites && \
+    echo "Removing config directory" && \
+    rm -rf $BUILDDIR/config && \
+    echo "Moving build.txt to current dir" && \
+    mv $BUILDDIR/build.txt /app && \
+    echo "Build complete"
+
+# Dossier final de déploiement
+WORKDIR /app/client-build
+
+# Lancer le serveur frontend
+CMD ["serve", "-s", ".", "-l", "8080"]
+
+### fin du fichier
+
 ```bash
-docker-compose down --volumes --remove-orphans
-docker-compose build --no-cache
-docker-compose up -d
+sudo docker compose down --volumes --remove-orphans
+sudo docker container prune -f
+sudo docker-compose up --build
+```
+```Powershell
+docker compose down --volumes --remove-orphans
+docker container prune -f
+docker-compose up --build
 ```
 
 Accès au client (jeu) :
 👉 [http://localhost:81/client](http://localhost:81/client)
+      ou si port 80 libre
+👉 [http://localhost:8080](http://localhost:8080)
 
 Connexion WebSocket :
 👉 `ws://localhost:81`
