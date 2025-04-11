@@ -115,7 +115,21 @@ services:
     depends_on:
       - prometheus
     restart: always
-
+  fail2ban:
+    image: crazymax/fail2ban:latest
+    container_name: fail2ban
+    restart: unless-stopped
+    volumes:
+      - ./fail2ban/jail.local:/data/jail.local
+      - ./fail2ban/filter.d:/data/filter.d
+      - ./logs:/var/log/nodeapp:ro
+  logtest:
+    build:
+      context: ./server
+    ports:
+      - "8005:8000"
+    volumes:
+      - ./logs:/app/logs
 volumes:
   redis_data:
   grafana_data:
