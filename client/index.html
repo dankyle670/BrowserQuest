@@ -14,32 +14,55 @@ Mozilla presents an HTML5 mini-MMORPG by Little Workshop http://www.littleworksh
 * Should work in latest versions of Firefox, Chrome, Safari, Opera, Safari Mobile and Firefox for Android
 
  -->
-<html lang="en">
-	<head>
-        <meta charset="utf-8">
-        <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1">
-        <meta name="apple-mobile-web-app-capable" content="yes">
-        <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
-        <link rel="icon" type="image/png" href="img/common/favicon.png">
-        <meta property="og:title" content="BrowserQuest">
-        <meta property="og:type" content="website">
-        <meta property="og:url" content="http://browserquest.mozilla.org/">
-        <meta property="og:image" content="http://browserquest.mozilla.org/img/common/promo-title.jpg">
-        <meta property="og:site_name" content="BrowserQuest">
-        <meta property="og:description" content="Play Mozilla's BrowserQuest, an HTML5 massively multiplayer game demo powered by WebSockets!">
-        <link rel="stylesheet" href="css/main.css" type="text/css">
-        <link rel="stylesheet" href="css/achievements.css" type="text/css">
-        <script src="js/lib/modernizr.js" type="text/javascript"></script>
-        <!--[if lt IE 9]>
-                <link rel="stylesheet" href="css/ie.css" type="text/css">
-                <script src="js/lib/css3-mediaqueries.js" type="text/javascript"></script>
-                <script type="text/javascript">
-                document.getElementById('parchment').className = ('error');
-                </script>
-        <![endif]-->
-        <script src="js/detect.js" type="text/javascript"></script>
-        <title>BrowserQuest</title>
-	</head>
+ <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge;chrome=1">
+    <meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1.0, user-scalable=no">
+    
+    <!-- Mobile Web App Capabilities -->
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  
+    <!-- App Icons -->
+    <link rel="apple-touch-icon" href="img/common/icon-192.png">
+    <link rel="icon" sizes="192x192" href="img/common/icon-192.png">
+  
+    <!-- Theme Color -->
+    <meta name="theme-color" content="#000000">
+  
+    <!-- PWA Manifest (optional if you want to support installability) -->
+    <link rel="manifest" href="/manifest.json">
+  
+    <!-- Favicon -->
+    <link rel="icon" type="image/png" href="img/common/favicon.png">
+  
+    <!-- Open Graph -->
+    <meta property="og:title" content="BrowserQuest">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="http://browserquest.mozilla.org/">
+    <meta property="og:image" content="http://browserquest.mozilla.org/img/common/promo-title.jpg">
+    <meta property="og:site_name" content="BrowserQuest">
+    <meta property="og:description" content="Play Mozilla's BrowserQuest, an HTML5 massively multiplayer game demo powered by WebSockets!">
+  
+    <!-- Styles -->
+    <link rel="stylesheet" href="css/main.css" type="text/css">
+    <link rel="stylesheet" href="css/achievements.css" type="text/css">
+  
+    <!-- Scripts -->
+    <script src="js/lib/modernizr.js" type="text/javascript"></script>
+    <!--[if lt IE 9]>
+      <link rel="stylesheet" href="css/ie.css" type="text/css">
+      <script src="js/lib/css3-mediaqueries.js" type="text/javascript"></script>
+      <script type="text/javascript">
+        document.getElementById('parchment').className = ('error');
+      </script>
+    <![endif]-->
+    <script src="js/detect.js" type="text/javascript"></script>
+  
+    <title>BrowserQuest</title>
+  </head>
+  
     <!--[if lt IE 9]>
 	<body class="intro upscaled">
     <![endif]-->

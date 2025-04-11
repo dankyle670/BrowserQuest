@@ -138,6 +138,10 @@ BrowserQuest/
     curl http://localhost:8001/health
     curl http://localhost:8002/health
     ```
+## Sécurisation de l'Application 
+- Mise en place d’un pare-feu PF sur macOS pour bloquer toutes les connexions entrantes sauf le port 8080 (serveur Node).
+- Activation de Fail2Ban avec surveillance du journal système /var/log/system.log.
+- Jail sshd active pour bannir les IPs en cas d’échec SSH répétés.
 
 ---
 
