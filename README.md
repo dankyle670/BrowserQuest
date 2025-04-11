@@ -70,12 +70,14 @@ CMD ["serve", "-s", ".", "-l", "8080"]
 
 ### fin du fichier
 
-```bash
+```
+bash
 sudo docker compose down --volumes --remove-orphans
 sudo docker container prune -f
 sudo docker-compose up --build
 ```
-```Powershell
+```
+Powershell
 docker compose down --volumes --remove-orphans
 docker container prune -f
 docker-compose up --build
@@ -209,7 +211,12 @@ BrowserQuest/
 ## Crédits
 
 Projet original : [Mozilla BrowserQuest](https://github.com/mozilla/BrowserQuest)
-Dockerisation & Haute dispo : Ton nom / équipe
+Dockerisation & Haute dispo : 
+Ehoura Christ-Yvann
+Komoe Daniel
+Izatoola Killian
+Samaké Amadou
+Ousmane Sacko
 
 ---
 

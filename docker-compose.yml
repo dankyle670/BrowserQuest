@@ -125,7 +125,7 @@ services:
       - ./logs:/var/log/nodeapp:ro
   logtest:
     build:
-      context: ./server
+      context: ./
     ports:
       - "8005:8000"
     volumes:
