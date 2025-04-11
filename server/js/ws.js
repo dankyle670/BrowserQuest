@@ -11,6 +11,8 @@ module.exports = WS;
 const Server = cls.Class.extend({
     init: function (port) {
         this.port = port;
+        this.pingInterval = 30000;  // Intervalle de ping en ms (30 secondes)
+        this.pingTimeout = 5000;    // Timeout pour attendre le pong (5 secondes)
     },
     onConnect: function (callback) {
         this.connection_callback = callback;
@@ -32,6 +34,31 @@ const Server = cls.Class.extend({
     },
     getConnection: function (id) {
         return this._connections[id];
+    },
+
+    // Fonction pour envoyer un ping régulièrement
+    startPingPong: function () {
+        const self = this;
+        setInterval(() => {
+            self.forEachConnection((connection) => {
+                connection.send({ type: 'ping' });
+                connection.pingTime = Date.now();
+            });
+        }, this.pingInterval);
+    },
+
+    // Fonction pour vérifier les connexions inactives
+    checkInactiveConnections: function () {
+        const self = this;
+        setInterval(() => {
+            self.forEachConnection((connection) => {
+                if (Date.now() - connection.pingTime > self.pingTimeout) {
+                    console.log(`Closing inactive connection: ${connection.id}`);
+                    connection.close("Inactive connection");
+                    self.removeConnection(connection.id);
+                }
+            });
+        }, this.pingTimeout);
     }
 });
 
@@ -40,6 +67,7 @@ const Connection = cls.Class.extend({
         this._connection = connection;
         this._server = server;
         this.id = id;
+        this.pingTime = Date.now();
     },
     onClose: function (callback) {
         this.close_callback = callback;
@@ -106,6 +134,10 @@ WS.MultiVersionWebsocketServer = Server.extend({
 
             self.addConnection(c);
         });
+
+        // Start ping pong and check for inactive connections
+        this.startPingPong();
+        this.checkInactiveConnections();
     },
 
     _createId: function () {
@@ -133,6 +165,11 @@ WS.WebSocketConnection = Connection.extend({
                 try {
                     const parsed = JSON.parse(message.utf8Data);
                     self.listen_callback(parsed);
+
+                    // Vérifier le ping pong
+                    if (parsed.type === 'pong') {
+                        self.pingTime = Date.now();
+                    }
                 } catch (e) {
                     if (e instanceof SyntaxError) {
                         self.close("Received message was not valid JSON.");
