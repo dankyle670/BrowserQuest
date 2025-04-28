@@ -1,3 +1,13 @@
+Parfait, alors je vais tout t’envoyer **propre et complet** ! 🚀
+
+---
+
+# 📜 Voici ton **README.md final corrigé et enrichi**
+
+(Copie **tout ça** pour remplacer ton README actuel)
+
+---
+
 # 🎮 BrowserQuest – Version Dockerisée (Frontend + Backend + Load Balancing)
 
 Ce projet est une version dockerisée complète de [BrowserQuest](https://github.com/mozilla/BrowserQuest), un jeu multijoueur inspiré des Zelda-like, avec serveur Node.js, client HTML5/JS, Redis pour les données, **et un Load Balancer NGINX** pour la haute disponibilité.
@@ -10,7 +20,8 @@ Ce projet est une version dockerisée complète de [BrowserQuest](https://github
 - Client HTML5/JS (`/client`)
 - Redis pour stocker l’état du jeu
 - NGINX comme Load Balancer avec support WebSocket et failover automatique
-- Configuration Docker pour tout lancer facilement
+- Fail2Ban intégré pour protection anti-bruteforce
+- Configuration Docker complète pour tout lancer facilement
 
 ---
 
@@ -19,7 +30,7 @@ Ce projet est une version dockerisée complète de [BrowserQuest](https://github
 ### 1. Prérequis
 
 - Avoir installé Docker et Docker Compose :
-   [Installer Docker](https://docs.docker.com/get-docker/)
+  [Installer Docker](https://docs.docker.com/get-docker/)
 
 ### 2. Lancer le projet
 
@@ -37,7 +48,7 @@ Accès au client (jeu) :
 Connexion WebSocket :
 👉 `ws://localhost:81`
 
-Le backend tourne sur 2 instances internes (`app1` et `app2`) sur le port `8000`, load balancées par NGINX.
+Le backend tourne sur 2 instances internes (`app1` et `app2`) sur le port `8000`, load balancées par NGINX.  
 Redis tourne sur le port `6379`.
 
 ---
@@ -48,12 +59,13 @@ Redis tourne sur le port `6379`.
 
 - `Dockerfile.client` pour le client
 - `Dockerfile` pour le backend
-- `docker-compose.yml` : déploiement multi-instance + redis + nginx
+- `docker-compose.yml` : déploiement multi-instance + redis + nginx + fail2ban
 - `nginx.conf` : configuration du proxy WebSocket avec failover et load balancing
 
 ### 🔧 Backend
 
 - Ajout d'un endpoint `/health` pour les healthchecks Docker/NGINX
+- Mise en place de logs d'accès dans `logs/access.log`
 
 ### 🔧 Frontend
 
@@ -73,8 +85,6 @@ Dans le code client WebSocket (game.js ou équivalent) :
 const protocol = config.secure ? 'wss' : 'ws';
 const socket = new WebSocket(`${protocol}://${window.location.hostname}:${config.port}`);
 ```
-
-Cela permet de pointer dynamiquement vers `localhost:81` en dev et `nginx:81` en Docker.
 
 ---
 
@@ -123,6 +133,50 @@ BrowserQuest/
 ├── docker-compose.yml
 ├── Dockerfile.client
 ├── Dockerfile
+├── fail2ban/          # Config Fail2Ban (anti-bruteforce)
+│   ├── jail.d/
+│   │   └── nodeapp.local
+│   ├── filter.d/
+│   │   └── nodeapp.conf
+│   └── restart_and_test.sh
+├── logs/              # Dossier pour stocker les accès logs
+```
+
+---
+
+## 🔒 Sécurisation de l'Application
+
+- Mise en place d’un pare-feu PF sur macOS pour bloquer toutes les connexions entrantes sauf les ports utiles (8080, 81...).
+- Activation de Fail2Ban avec surveillance automatique des accès HTTP au serveur.
+- Jail `nodeapp` active pour bannir automatiquement les IPs en cas d'abus.
+- Surveillances sur `/logs/access.log`.
+
+---
+
+## 🛡️ Ajout de Fail2Ban (Protection Anti-Bruteforce)
+
+- Intégration de Fail2Ban dans Docker via `crazymax/fail2ban:latest`
+- Configuration montée via :
+  - `fail2ban/jail.d/nodeapp.local`
+  - `fail2ban/filter.d/nodeapp.conf`
+- Surveillance du fichier `/logs/access.log`
+- Bannissement après 3 accès suspects (tentatives massives de connexion par exemple).
+- Durée du bannissement par défaut : **600 secondes** (10 minutes).
+
+### 📜 Script d'automatisation
+
+- **`restart_and_test.sh`** : script Bash pour :
+  - Rebuild complet du projet
+  - Relancer Docker
+  - Simuler 10 attaques
+  - Vérifier l'état Fail2Ban
+  - Débannir automatiquement l'IP locale si nécessaire
+
+Utilisation rapide :
+
+```bash
+chmod +x restart_and_test.sh
+./restart_and_test.sh
 ```
 
 ---
@@ -138,10 +192,6 @@ BrowserQuest/
     curl http://localhost:8001/health
     curl http://localhost:8002/health
     ```
-## Sécurisation de l'Application 
-- Mise en place d’un pare-feu PF sur macOS pour bloquer toutes les connexions entrantes sauf le port 8080 (serveur Node).
-- Activation de Fail2Ban avec surveillance du journal système /var/log/system.log.
-- Jail sshd active pour bannir les IPs en cas d’échec SSH répétés.
 
 ---
 
@@ -151,16 +201,35 @@ BrowserQuest/
 - Load balancing par IP (`ip_hash`) ou charge (`least_conn`)
 - Monitoring via Grafana/Prometheus
 - Mise à l’échelle automatique via Docker Swarm ou Kubernetes
+- Détection automatique d'attaques plus avancée (fail2ban regex + honeypots)
 
 ---
 
 ## Crédits
 
-Projet original : [Mozilla BrowserQuest](https://github.com/mozilla/BrowserQuest)
-Dockerisation & Haute dispo : Ton nom / équipe
+Projet original : [Mozilla BrowserQuest](https://github.com/mozilla/BrowserQuest)  
+Dockerisation & Sécurisation Fail2Ban : Ousmane Sacko 🚀
 
 ---
 
 ## Licence
 
 MIT – open source
+
+---
+
+# 🎖️ Bonus
+
+**Badge de protection Fail2Ban actif** que tu peux aussi rajouter dans le haut du README :
+
+```markdown
+![Fail2Ban Protection](https://img.shields.io/badge/Fail2Ban-Protection%20Active-brightgreen)
+```
+
+Exemple visuel :
+
+![Fail2Ban Protection](https://img.shields.io/badge/Fail2Ban-Protection%20Active-brightgreen)
+
+---
+
+# ✅ Voilà tout est prêt !

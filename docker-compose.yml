@@ -57,7 +57,7 @@ services:
   redis:
     image: redis:alpine
     ports:
-      - "6379:6379"  #  À supprimer en production (Yvann)
+      - "6379:6379"  #  À supprimer en production
     volumes:
       - redis_data:/data
     command: redis-server --appendonly yes
@@ -115,14 +115,16 @@ services:
     depends_on:
       - prometheus
     restart: always
+
   fail2ban:
     image: crazymax/fail2ban:latest
     container_name: fail2ban
     restart: unless-stopped
     volumes:
-      - ./fail2ban/jail.local:/data/jail.local
+      - ./fail2ban/jail.d:/data/jail.d
       - ./fail2ban/filter.d:/data/filter.d
       - ./logs:/var/log/nodeapp:ro
+
   logtest:
     build:
       context: ./server
@@ -130,6 +132,7 @@ services:
       - "8005:8000"
     volumes:
       - ./logs:/app/logs
+
 volumes:
   redis_data:
   grafana_data:
